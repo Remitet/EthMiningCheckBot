@@ -7,6 +7,7 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.utils import executor
 import requests
 import re
+import time
 
 # Сетим токен
 API_TOKEN = ''
@@ -32,14 +33,14 @@ async def start_cmd_handler(message: types.Message):
     await message.reply("Привет! Тут можно проверить доход майнига эфира", reply_markup=keyboard_markup)
 
 
-# Ответ на кнопку new
+# Ответ на кнопку для нового хр
 @dp.callback_query_handler(text='new', state='*')
 async def inline_kb_answer_callback_handler(query: types.CallbackQuery):
     await Form.new.set()
     await query.answer()
     await query.message.answer('Введите ваш хэшрейт, MH/s')
 
-# Ответ на кнопку old
+# Ответ на кнопку введенного хр
 @dp.callback_query_handler(text='old', state='*')
 async def inline_kb_answer_callback_handler(query: types.CallbackQuery, state: FSMContext):
     await state.update_data(is_old=True)
@@ -58,19 +59,20 @@ async def new_handler(message: types.Message, state: FSMContext):
     print(userHashrate)
     if userHashrate.replace('.', '', 1).isdigit() or userHashrate.replace(',', '', 1).isdigit():
         correctUserHashrate = float(userHashrate.replace(',', '.'))
-        correctUserHashrateMil = int(correctUserHashrate * 1000000)
-        print(correctUserHashrateMil)
-        response = requests.get(
-            "https://www.coincalculators.io/api?name=ethereum&hashrate=" + str(correctUserHashrateMil))
-        print('Запрос прошел')
+        print(correctUserHashrate)
+        link_url = "https://2cryptocalc.com/ajax/ru/algo/now/ethash/" + str(correctUserHashrate)
+        response = requests.get(link_url)
+        print(link_url)
 
         # Переменные с доходом
-        print(re.findall('profitInYearUSD":(.*?),', response.text))
-        Eth_Hour = round(float(re.findall('profitInHourUSD":(.*?),', response.text)[0]), 2)
-        Eth_Day = round(float(re.findall('profitInDayUSD":(.*?),', response.text)[0]), 2)
-        Eth_Week = round(float(re.findall('profitInWeekUSD":(.*?),', response.text)[0]), 2)
-        Eth_Month = round(float(re.findall('profitInMonthUSD":(.*?),', response.text)[0]), 2)
-        Eth_Year = round(float(re.findall('profitInYearUSD":(.*?),', response.text)[0]), 2)
+        Eth_Day = re.findall(
+            r'"profit":{"html":"<span class=\\"crypto-val text-right\\"><span class=\\"crypto-val__text\\"><span class=\\"text-val\\">(.*?)<',
+            response.text)[0]
+        print(Eth_Day)
+        Eth_Hour = round((float(Eth_Day) / 24), 2)
+        Eth_Week = round((float(Eth_Day) * 7), 2)
+        Eth_Month = round((float(Eth_Day) * 30), 2)
+        Eth_Year = round((float(Eth_Day) * 365), 2)
         print('Значения получены')
         if 'is_old' not in data or 'is_old' in data and data['is_old'] is True:
             await state.update_data(is_old=False)
@@ -91,7 +93,7 @@ async def new_handler(message: types.Message, state: FSMContext):
         # Обрабатываем невалидности
         await bot.send_message(message.chat.id, 'Ошибка! Введите корректное значение!')
 
-# Инициализация
+#Перезапуск
 if __name__ == '__main__':
     while True:
         try:
