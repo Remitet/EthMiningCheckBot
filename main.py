@@ -86,9 +86,8 @@ async def new_handler(message: types.Message, state: FSMContext):
         keyboard_markup.add(types.InlineKeyboardButton(text='Перерасчитать для введенного', callback_data='old'))
 
         await message.answer(
-            f'Доход: \n\n*В час:* {Eth_Hour} $\n*В день:* {Eth_Day} $\n*В неделю: *{Eth_Week} $\n*В месяц:* {Eth_Month} $\n*В год:* {Eth_Year} $',
-            parse_mode="Markdown",
-        reply_markup=keyboard_markup)
+            f'<b>Хэшрейт:</b> {correctUserHashrate} MH/s\n\n<b><u>Доход:</u></b>\n<b>В час:</b> {Eth_Hour} $\n<b>В день:</b> {Eth_Day} $\n<b>В неделю:</b> {Eth_Week} $\n<b>В месяц:</b> {Eth_Month} $\n<b>В год:</b> {Eth_Year} $',
+            parse_mode="HTML",reply_markup=keyboard_markup)
     else:
         # Обрабатываем невалидности
         await bot.send_message(message.chat.id, 'Ошибка! Введите корректное значение!')
