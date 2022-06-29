@@ -27,11 +27,8 @@ class Form(StatesGroup):
 @dp.message_handler(commands='start', state='*')
 async def start_cmd_handler(message: types.Message):
     keyboard_markup = types.InlineKeyboardMarkup()
-
     keyboard_markup.add(types.InlineKeyboardButton(text='Рассчитать новый хэшрейт', callback_data='new'))
-
     await message.reply("Привет! Тут можно проверить доход майнига эфира", reply_markup=keyboard_markup)
-
 
 # Ответ на кнопку для нового хр
 @dp.callback_query_handler(text='new', state='*')
